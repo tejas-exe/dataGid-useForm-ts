@@ -32,18 +32,18 @@ const Popup: React.FC<PopupProps> = ({
         </DialogTitle>
         <DialogContent>
           <DialogContentText id='alert-dialog-slide-description'>
-            {`Caution: ${selectedCellValue.first_name} ${selectedCellValue.last_name} will be deleted from your list`}
+            {`${selectedCellValue.first_name} ${selectedCellValue.last_name} will be deleted from your list`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleClose}>Close</Button>
           <Button
             onClick={() => {
               handleClose();
               handleDeleteConfirm(selectedCellValue);
             }}
           >
-            Agree
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

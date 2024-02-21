@@ -1,4 +1,4 @@
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { UserApi } from '../../Api/UserApi';
 import { UserData } from '../../Types/users-types';
 
@@ -19,14 +19,14 @@ const UserSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(
-        fetchUserData.fulfilled,(state, action: PayloadAction<UserData>) => {
-          Object.assign(state, action.payload, {
-            success: true,
-            message: 'success',
-          });
-        },
-      )
+      .addCase(fetchUserData.fulfilled, (state, actions) => {
+        state.success = true;
+        state.message = 'success';
+        state.total_users = actions.payload.total_users;
+        state.offset = actions.payload.offset;
+        state.limit = actions.payload.limit;
+        state.users = actions.payload.users;
+      })
       .addCase(fetchUserData.pending, (state, actions) => {
         state.message = 'loading';
         state.users = [];
@@ -38,11 +38,16 @@ const UserSlice = createSlice({
   },
 });
 
+interface FetchUserDataArgs {
+  page: number;
+  pageSize: number;
+}
+
 export const fetchUserData = createAsyncThunk(
   'user/fetchUserData',
-  async () => {
+  async ({ page, pageSize }: FetchUserDataArgs) => {
     try {
-      const response = await UserApi.fetchUser();
+      const response = await UserApi.fetchUser(page, pageSize);
       return response;
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -50,6 +55,5 @@ export const fetchUserData = createAsyncThunk(
     }
   },
 );
-
 
 export default UserSlice.reducer;

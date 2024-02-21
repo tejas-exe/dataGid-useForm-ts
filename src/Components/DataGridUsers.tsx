@@ -4,7 +4,7 @@ import { AppDispatch, RootState } from '../Store/Index';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { fetchUserData } from '../Store/Slices/UserSlice';
-import { FormValues, User } from '../Types/users-types';
+import { FormValues } from '../Types/users-types';
 import { Button, IconButton } from '@mui/material';
 import { Add, Delete, Edit } from '@mui/icons-material';
 import Popup from './Popup';
@@ -33,24 +33,29 @@ const DataGridUsers: React.FC = () => {
   };
   const dispatch: AppDispatch = useDispatch();
   const userReducerState = useSelector((state: RootState) => state.userReducer);
-  const [rows, setRows] = useState<User[]>([]);
   const [open, setOpen] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(5);
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [updateField, setUpdateField] = useState<boolean>(false);
   const [selectedCellValue, setSelectedCellValue] = useState<FormValues>(
     initialStateFormValue,
   );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      dispatch(fetchUserData());
-    };
-    fetchData();
-  }, [dispatch]);
+  console.log('-=->', userReducerState.users);
 
   useEffect(() => {
-    setRows(userReducerState.users);
-  }, [userReducerState]);
+    const fetchData = async () => {
+      dispatch(
+        fetchUserData({
+          page: page,
+          pageSize: pageSize,
+        }),
+      );
+    };
+    fetchData();
+    console.log(page, pageSize);
+  }, [dispatch, page, pageSize]);
 
   const columns: GridColDef[] = [
     {
@@ -92,7 +97,7 @@ const DataGridUsers: React.FC = () => {
       field: 'city',
       headerName: 'City',
       type: 'string',
-      width: 150,
+      width: 120,
     },
     {
       field: 'email',
@@ -108,46 +113,46 @@ const DataGridUsers: React.FC = () => {
     },
     {
       field: 'id',
-      headerName: 'Delete',
+      headerName: 'Actions',
       sortable: false,
       filterable: false,
-      width: 80,
+      width: 170,
+      headerAlign: 'center',
       renderCell: (params) => (
-        <IconButton
-          aria-label='delete'
-          color='error'
-          onClick={() => {
-            setSelectedCellValue(params.row);
-            setOpen(true);
-          }}
+        <Box
+          display='flex'
+          width={'100%'}
+          justifyContent='space-around'
+          height='100%'
         >
-          <Delete />
-        </IconButton>
-      ),
-    },
-    {
-      field: 'id-firstName',
-      headerName: 'Edit',
-      width: 80,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <IconButton
-          aria-label='edit'
-          onClick={() => {
-            setSelectedCellValue(params.row);
-            setUpdateField(true);
-            setOpenForm(true);
-          }}
-        >
-          <Edit />
-        </IconButton>
+          <IconButton
+            aria-label='edit'
+            onClick={() => {
+              setSelectedCellValue(params.row);
+              setUpdateField(true);
+              setOpenForm(true);
+            }}
+          >
+            <Edit />
+          </IconButton>
+
+          <IconButton
+            aria-label='delete'
+            color='error'
+            onClick={() => {
+              setSelectedCellValue(params.row);
+              setOpen(true);
+            }}
+          >
+            <Delete />
+          </IconButton>
+        </Box>
       ),
     },
   ];
 
   return (
-    <Box sx={{ height: 371, width: '90%' }}>
+    <Box sx={{ height: 371, width: { lg: '1160px', xl: '1200px' } }}>
       <AddUpdatePopup
         updateField={updateField}
         openForm={openForm}
@@ -175,10 +180,14 @@ const DataGridUsers: React.FC = () => {
         Add user
       </Button>
       <DataGrid
-        // autoHeight={true}
+        onPaginationModelChange={({ page, pageSize }) => {
+          setPage(page);
+          setPageSize(pageSize);
+        }}
         disableRowSelectionOnClick={true}
-        rows={rows}
+        rows={userReducerState.users}
         columns={columns}
+        pagination
         initialState={{
           pagination: {
             paginationModel: {
@@ -186,7 +195,9 @@ const DataGridUsers: React.FC = () => {
             },
           },
         }}
-        pageSizeOptions={[5, 10]}
+        rowCount={userReducerState.total_users}
+        paginationMode='server'
+        pageSizeOptions={[5, 10, 20, 50, 100]}
       />
       <Popup
         open={open}

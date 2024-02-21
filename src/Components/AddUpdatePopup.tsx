@@ -97,7 +97,7 @@ const AddUpdatePopup: React.FC<OpenFormProps> = ({
         onClose={handleClose}
         aria-describedby='alert-dialog-slide-description'
       >
-        <DialogTitle>Add user</DialogTitle>
+        <DialogTitle>{updateField ? `Update user` : `Add user`}</DialogTitle>
         <DialogContent>
           <Box component='form' noValidate onSubmit={handleSubmit(onSubmit)}>
             <TextField
@@ -112,7 +112,7 @@ const AddUpdatePopup: React.FC<OpenFormProps> = ({
               {...register('email', {
                 required: true,
                 pattern: {
-                  value: /^\S+@\S+$/i,
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                   message: 'Please enter a valid Email',
                 },
               })}
@@ -141,7 +141,6 @@ const AddUpdatePopup: React.FC<OpenFormProps> = ({
               error={!!errors.last_name}
               helperText={errors.last_name ? errors.last_name.message : ''}
             />
-
             <Select
               value={watch('gender')}
               sx={{ margin: '10px auto' }}
@@ -156,7 +155,7 @@ const AddUpdatePopup: React.FC<OpenFormProps> = ({
               inputProps={{ id: 'gender' }}
             >
               <MenuItem value='' disabled>
-                Select Gender
+                Select Gender *
               </MenuItem>
               <MenuItem value='male'>Male</MenuItem>
               <MenuItem value='female'>Female</MenuItem>
@@ -166,9 +165,9 @@ const AddUpdatePopup: React.FC<OpenFormProps> = ({
                 {errors.gender.message}
               </FormHelperText>
             )}
-
             <TextField
-              InputLabelProps={{ shrink: watch('date_of_birth') !== '' }}
+              required
+              InputLabelProps={{ shrink: true }}
               margin='dense'
               id='date_of_birth'
               label='Date of Birth'
