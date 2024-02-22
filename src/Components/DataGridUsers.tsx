@@ -42,8 +42,6 @@ const DataGridUsers: React.FC = () => {
     initialStateFormValue,
   );
 
-  console.log('-=->', userReducerState.users);
-
   useEffect(() => {
     const fetchData = async () => {
       dispatch(
