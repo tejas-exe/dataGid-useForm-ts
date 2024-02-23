@@ -1,16 +1,17 @@
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { AppDispatch, RootState } from '../Store/Index';
+import { AppDispatch, RootState } from '../Redux/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { fetchUserData } from '../Store/Slices/UserSlice';
+import {
+  fetchUserData,
+  openCloseModal,
+} from '../Redux/Reducers/UserSlice/UserSlice';
 import { FormValues } from '../Types/users-types';
 import { Button, IconButton } from '@mui/material';
 import { Add, Delete, Edit } from '@mui/icons-material';
 import Popup from './Popup';
 import AddUpdatePopup from './AddUpdatePopup';
-// import AddUpdatePopup from './AddUpdatePopup';
-// GridValueGetterParams;
 
 const DataGridUsers: React.FC = () => {
   const initialStateFormValue: FormValues = {
@@ -33,26 +34,23 @@ const DataGridUsers: React.FC = () => {
   };
   const dispatch: AppDispatch = useDispatch();
   const userReducerState = useSelector((state: RootState) => state.userReducer);
-  const [open, setOpen] = useState<boolean>(false);
+
   const [page, setPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(5);
-  const [openForm, setOpenForm] = useState<boolean>(false);
-  const [updateField, setUpdateField] = useState<boolean>(false);
+
   const [selectedCellValue, setSelectedCellValue] = useState<FormValues>(
     initialStateFormValue,
   );
 
+  const [updateField, setUpdateField] = useState<boolean>(false);
+
   useEffect(() => {
-    const fetchData = async () => {
-      dispatch(
-        fetchUserData({
-          page: page,
-          pageSize: pageSize,
-        }),
-      );
-    };
-    fetchData();
-    console.log(page, pageSize);
+    dispatch(
+      fetchUserData({
+        page: page,
+        pageSize: pageSize,
+      }),
+    );
   }, [dispatch, page, pageSize]);
 
   const columns: GridColDef[] = [
@@ -128,7 +126,12 @@ const DataGridUsers: React.FC = () => {
             onClick={() => {
               setSelectedCellValue(params.row);
               setUpdateField(true);
-              setOpenForm(true);
+              dispatch(
+                openCloseModal({
+                  component: 'openEditForm',
+                  action: true,
+                }),
+              );
             }}
           >
             <Edit />
@@ -139,7 +142,12 @@ const DataGridUsers: React.FC = () => {
             color='error'
             onClick={() => {
               setSelectedCellValue(params.row);
-              setOpen(true);
+              dispatch(
+                openCloseModal({
+                  component: 'openDeletePopup',
+                  action: true,
+                }),
+              );
             }}
           >
             <Delete />
@@ -153,9 +161,11 @@ const DataGridUsers: React.FC = () => {
     <Box sx={{ height: 371, width: { lg: '1160px', xl: '1200px' } }}>
       <AddUpdatePopup
         updateField={updateField}
-        openForm={openForm}
+        openForm={userReducerState.openEditForm}
         selectedCellValue={selectedCellValue}
-        handleCloseForm={() => setOpenForm(false)}
+        handleCloseForm={() =>
+          dispatch(openCloseModal({ component: 'openEditForm', action: false }))
+        }
         handleSubmitForm={(data) => {
           if (data.id) {
             console.log('update this data=>', data);
@@ -169,7 +179,7 @@ const DataGridUsers: React.FC = () => {
         onClick={() => {
           setSelectedCellValue(initialStateFormValue);
           setUpdateField(false);
-          setOpenForm(true);
+          dispatch(openCloseModal({ component: 'openEditForm', action: true }));
         }}
         startIcon={<Add />}
         variant='contained'
@@ -198,9 +208,13 @@ const DataGridUsers: React.FC = () => {
         pageSizeOptions={[5, 10, 20, 50, 100]}
       />
       <Popup
-        open={open}
+        open={userReducerState.openDeletePopup}
         selectedCellValue={selectedCellValue}
-        handleClose={() => setOpen(false)}
+        handleClose={() =>
+          dispatch(
+            openCloseModal({ component: 'openDeletePopup', action: false }),
+          )
+        }
         handleDeleteConfirm={(data) => {
           console.log('Delete this =>', data);
         }}

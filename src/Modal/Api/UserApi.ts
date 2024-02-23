@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { UserData } from '../Types/users-types';
+import { UserData } from '../../Types/users-types';
 
+//
 const BASE_URL = 'https://api.slingacademy.com/v1/sample-data';
 
 export class UserApi {

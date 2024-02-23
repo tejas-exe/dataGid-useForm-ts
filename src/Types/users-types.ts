@@ -4,6 +4,8 @@ export interface UserData {
   total_users: number;
   offset: number;
   limit: number;
+  openEditForm: boolean;
+  openDeletePopup: boolean;
   users: User[];
 }
 
@@ -43,4 +45,9 @@ export interface FormValues {
   phone: string;
   latitude: number;
   longitude: number;
+}
+
+export interface OpenModalPayload {
+  component: 'openEditForm' | 'openDeletePopup';
+  action: boolean;
 }
