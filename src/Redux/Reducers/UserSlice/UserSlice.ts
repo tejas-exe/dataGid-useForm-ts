@@ -49,8 +49,6 @@ const UserSlice = createSlice({
       state[component] = modalAction;
     },
     selectCellValue(state: UserData, action: PayloadAction<FormValues>) {
-      console.log('===>Bat man ', action.payload);
-
       state.cellValue = action.payload;
     },
   },
@@ -60,7 +58,7 @@ const UserSlice = createSlice({
         fetchUserData.fulfilled,
         (state: UserData, action: PayloadAction<UserData>) => {
           const { total_users, offset, limit, users } = action.payload;
-          console.log('===>', offset, '===>', limit);
+
           return {
             ...state,
             success: true,
