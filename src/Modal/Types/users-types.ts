@@ -6,7 +6,9 @@ export interface UserData {
   limit: number;
   openEditForm: boolean;
   openDeletePopup: boolean;
+  isEditable: boolean;
   users: User[];
+  cellValue: FormValues;
 }
 
 export interface User {
@@ -50,4 +52,10 @@ export interface FormValues {
 export interface OpenModalPayload {
   component: 'openEditForm' | 'openDeletePopup';
   action: boolean;
+  isEditable: boolean;
+}
+
+export interface FetchUserDataArgs {
+  page: number;
+  pageSize: number;
 }

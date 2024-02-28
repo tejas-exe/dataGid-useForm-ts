@@ -1,16 +1,42 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { UserApi } from '../../../Modal/Api/UserApi';
-import { OpenModalPayload, UserData } from '../../../Types/users-types';
+import {
+  FetchUserDataArgs,
+  FormValues,
+  OpenModalPayload,
+  UserData,
+} from '../../../Modal/Types/users-types';
+
+export const defaultCellValue: FormValues = {
+  id: 0,
+  email: '',
+  first_name: '',
+  last_name: '',
+  gender: '',
+  date_of_birth: '',
+  job: '',
+  city: '',
+  zipcode: '',
+  street: '',
+  state: '',
+  country: '',
+  profile_picture: '',
+  phone: '',
+  latitude: 0,
+  longitude: 0,
+};
 
 const initialState: UserData = {
   success: false,
   message: '',
   total_users: 0,
   offset: 0,
-  limit: 0,
+  limit: 5,
   users: [],
   openEditForm: false,
   openDeletePopup: false,
+  isEditable: false,
+  cellValue: defaultCellValue,
 };
 
 const UserSlice = createSlice({
@@ -18,8 +44,14 @@ const UserSlice = createSlice({
   initialState,
   reducers: {
     openCloseModal(state: UserData, action: PayloadAction<OpenModalPayload>) {
-      const { component, action: modalAction } = action.payload;
+      const { component, action: modalAction, isEditable } = action.payload;
+      state.isEditable = isEditable;
       state[component] = modalAction;
+    },
+    selectCellValue(state: UserData, action: PayloadAction<FormValues>) {
+      console.log('===>Bat man ', action.payload);
+
+      state.cellValue = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -28,6 +60,7 @@ const UserSlice = createSlice({
         fetchUserData.fulfilled,
         (state: UserData, action: PayloadAction<UserData>) => {
           const { total_users, offset, limit, users } = action.payload;
+          console.log('===>', offset, '===>', limit);
           return {
             ...state,
             success: true,
@@ -57,11 +90,6 @@ const UserSlice = createSlice({
   },
 });
 
-interface FetchUserDataArgs {
-  page: number;
-  pageSize: number;
-}
-
 export const fetchUserData = createAsyncThunk(
   'user/fetchUserData',
   async ({ page, pageSize }: FetchUserDataArgs) => {
@@ -75,5 +103,5 @@ export const fetchUserData = createAsyncThunk(
   },
 );
 
-export const { openCloseModal } = UserSlice.actions;
+export const { openCloseModal, selectCellValue } = UserSlice.actions;
 export default UserSlice.reducer;

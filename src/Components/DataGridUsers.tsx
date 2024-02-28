@@ -2,56 +2,31 @@ import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { AppDispatch, RootState } from '../Redux/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
+  defaultCellValue,
   fetchUserData,
   openCloseModal,
+  selectCellValue,
 } from '../Redux/Reducers/UserSlice/UserSlice';
-import { FormValues } from '../Types/users-types';
 import { Button, IconButton } from '@mui/material';
 import { Add, Delete, Edit } from '@mui/icons-material';
 import Popup from './Popup';
 import AddUpdatePopup from './AddUpdatePopup';
 
 const DataGridUsers: React.FC = () => {
-  const initialStateFormValue: FormValues = {
-    id: 0,
-    email: '',
-    first_name: '',
-    last_name: '',
-    gender: '',
-    date_of_birth: '',
-    job: '',
-    city: '',
-    zipcode: '',
-    street: '',
-    state: '',
-    country: '',
-    profile_picture: '',
-    phone: '',
-    latitude: 0,
-    longitude: 0,
-  };
   const dispatch: AppDispatch = useDispatch();
   const userReducerState = useSelector((state: RootState) => state.userReducer);
-
-  const [page, setPage] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(5);
-
-  const [selectedCellValue, setSelectedCellValue] = useState<FormValues>(
-    initialStateFormValue,
-  );
-
-  const [updateField, setUpdateField] = useState<boolean>(false);
 
   useEffect(() => {
     dispatch(
       fetchUserData({
-        page: page,
-        pageSize: pageSize,
+        page: userReducerState.offset,
+        pageSize: userReducerState.limit,
       }),
     );
-  }, [dispatch, page, pageSize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const columns: GridColDef[] = [
     {
@@ -124,12 +99,13 @@ const DataGridUsers: React.FC = () => {
           <IconButton
             aria-label='edit'
             onClick={() => {
-              setSelectedCellValue(params.row);
-              setUpdateField(true);
+              dispatch(selectCellValue(params.row));
+
               dispatch(
                 openCloseModal({
                   component: 'openEditForm',
                   action: true,
+                  isEditable: true,
                 }),
               );
             }}
@@ -141,11 +117,12 @@ const DataGridUsers: React.FC = () => {
             aria-label='delete'
             color='error'
             onClick={() => {
-              setSelectedCellValue(params.row);
+              dispatch(selectCellValue(params.row));
               dispatch(
                 openCloseModal({
                   component: 'openDeletePopup',
                   action: true,
+                  isEditable: false,
                 }),
               );
             }}
@@ -160,11 +137,17 @@ const DataGridUsers: React.FC = () => {
   return (
     <Box sx={{ height: 371, width: { lg: '1160px', xl: '1200px' } }}>
       <AddUpdatePopup
-        updateField={updateField}
+        updateField={userReducerState.isEditable}
         openForm={userReducerState.openEditForm}
-        selectedCellValue={selectedCellValue}
+        selectedCellValue={userReducerState.cellValue}
         handleCloseForm={() =>
-          dispatch(openCloseModal({ component: 'openEditForm', action: false }))
+          dispatch(
+            openCloseModal({
+              component: 'openEditForm',
+              action: false,
+              isEditable: false,
+            }),
+          )
         }
         handleSubmitForm={(data) => {
           if (data.id) {
@@ -177,9 +160,14 @@ const DataGridUsers: React.FC = () => {
       <Button
         sx={{ marginBottom: '10px' }}
         onClick={() => {
-          setSelectedCellValue(initialStateFormValue);
-          setUpdateField(false);
-          dispatch(openCloseModal({ component: 'openEditForm', action: true }));
+          dispatch(selectCellValue(defaultCellValue));
+          dispatch(
+            openCloseModal({
+              component: 'openEditForm',
+              action: true,
+              isEditable: false,
+            }),
+          );
         }}
         startIcon={<Add />}
         variant='contained'
@@ -189,8 +177,12 @@ const DataGridUsers: React.FC = () => {
       </Button>
       <DataGrid
         onPaginationModelChange={({ page, pageSize }) => {
-          setPage(page);
-          setPageSize(pageSize);
+          dispatch(
+            fetchUserData({
+              page,
+              pageSize,
+            }),
+          );
         }}
         disableRowSelectionOnClick={true}
         rows={userReducerState.users}
@@ -209,10 +201,14 @@ const DataGridUsers: React.FC = () => {
       />
       <Popup
         open={userReducerState.openDeletePopup}
-        selectedCellValue={selectedCellValue}
+        selectedCellValue={userReducerState.cellValue}
         handleClose={() =>
           dispatch(
-            openCloseModal({ component: 'openDeletePopup', action: false }),
+            openCloseModal({
+              component: 'openDeletePopup',
+              action: false,
+              isEditable: false,
+            }),
           )
         }
         handleDeleteConfirm={(data) => {

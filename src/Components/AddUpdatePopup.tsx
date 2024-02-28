@@ -11,7 +11,7 @@ import {
   MenuItem,
   Select,
 } from '@mui/material';
-import { FormValues } from '../Types/users-types';
+import { FormValues } from '../Modal/Types/users-types';
 import { useEffect } from 'react';
 import { DevTool } from '@hookform/devtools';
 import { Add, Close } from '@mui/icons-material';
